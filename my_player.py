@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 """
+import math
 from avalam import *
 
 class State:
@@ -35,20 +36,19 @@ class Action:
 def 𝗆𝗂𝗇𝗂𝗆𝖺𝗑𝖲𝖾𝖺𝗋𝖼𝗁(s0):    
     visitedStates = {}
     bestAction = 𝗆𝖺𝗑𝖵𝖺𝗅𝗎𝖾(visitedStates,s0,-24,24)
-    print("NUMBER of visitedStates: ",len(visitedStates))
     return bestAction
 
 def 𝗆𝖺𝗑𝖵𝖺𝗅𝗎𝖾(visitedStates,s,alpha,beta):
-    print("DEPTH: ",s.depth)
+    #print("DEPTH: ",s.depth)
     board = dict_to_board(s.percepts)
     if board.is_finished():
         return Action(board.get_score(),None)
-    if s.depth >= 13 and is_Quiescent(s):
+    if s.depth >= 18:
         return Action(h(s),None)
-    action = Action(-24,None)            
+    action = Action(-math.inf,None)            
     visitedActions = []
     for a in board.get_actions():
-        print("max Action: ",a)
+        #print("max Action: ",a)
         if a not in visitedActions:
             sucsessorborad = board.play_action(a)
             visitedActions.append(a)                
@@ -68,19 +68,19 @@ def 𝗆𝖺𝗑𝖵𝖺𝗅𝗎𝖾(visitedStates,s,alpha,beta):
                 alpha = max(alpha,action.score)
             if action.score >= beta:
                 return action
-    print()
+    #print()
     return action
 
 def minValue(visitedStates,s,alpha,beta):
     board = dict_to_board(s.percepts)
     if board.is_finished():
         return Action(board.get_score(),None)
-    if s.depth >= 13 and is_Quiescent(s):
+    if s.depth >= 18:
         return Action(h(s),None)
-    action = Action(24,None)
+    action = Action(math.inf,None)
     visitedActions = []
     for a in board.get_actions():
-        print("min Action: ",a)
+        #print("min Action: ",a)
         if a not in visitedActions:
             sucsessorborad = board.play_action(a)
             visitedActions.append(a)
@@ -100,7 +100,7 @@ def minValue(visitedStates,s,alpha,beta):
                 beta = min(beta,action.score)
             if action.score <= alpha:
                 return action
-    print()
+    #print()
     return action
 
 def h(s):
@@ -148,13 +148,13 @@ def is_Opposite_Sign(a,b):
     return False
 
 def is_Quiescent(s):
-    board = dict_to_board(s.percepts)
-    for i in range(board.rows):
-            for j in range(board.columns):
-                if board.m[i][j] == 4 and not is_Tower_Safe(board,i,j):
-                    return False
-                if board.m[i][j] == 3 and not is_Tower_Safe(board,i,j):
-                    return False
+    #board = dict_to_board(s.percepts)
+    #for i in range(board.rows):
+    #        for j in range(board.columns):
+    #            if board.m[i][j] == 4 and not is_Tower_Safe(board,i,j):
+    #                return False
+    #            if board.m[i][j] == 3 and not is_Tower_Safe(board,i,j):
+    #                return False
     return True 
 
 class MyAgent(Agent):
