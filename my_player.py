@@ -26,7 +26,6 @@ class State:
         self.player = player
         self.depth = depth
         self.time_left = time_left
-        #self.action = action
 
 class Action:
     def __init__(self, score, action):
@@ -35,72 +34,61 @@ class Action:
 
 def 𝗆𝗂𝗇𝗂𝗆𝖺𝗑𝖲𝖾𝖺𝗋𝖼𝗁(s0):    
     visitedStates = {}
-    bestAction = 𝗆𝖺𝗑𝖵𝖺𝗅𝗎𝖾(visitedStates,s0,-24,24)
+    bestAction = 𝗆𝖺𝗑𝖵𝖺𝗅𝗎𝖾(visitedStates,s0,-math.inf,math.inf)
     return bestAction
 
 def 𝗆𝖺𝗑𝖵𝖺𝗅𝗎𝖾(visitedStates,s,alpha,beta):
-    #print("DEPTH: ",s.depth)
     board = dict_to_board(s.percepts)
     if board.is_finished():
         return Action(board.get_score(),None)
-    if s.depth >= 18:
+    if s.depth >= 10:
         return Action(h(s),None)
     action = Action(-math.inf,None)            
-    visitedActions = []
     for a in board.get_actions():
-        #print("max Action: ",a)
-        if a not in visitedActions:
-            sucsessorborad = board.play_action(a)
-            visitedActions.append(a)                
-            player = -s.player
-            percepts = {'m': sucsessorborad.get_percepts(True), 'rows': 9, 'columns': 9, 'max_height': 5}
-            if (hash(str(percepts)),player) in visitedStates:
-                minAction = visitedStates[(hash(str(percepts)),player)]
-            else:
-                depth = s.depth + 1
-                time = s.time_left
-                sucsessorState = State(percepts,player,depth,time)
-                minAction = minValue(visitedStates,sucsessorState,alpha,beta)
-                visitedStates.setdefault((hash(str(percepts)),player),minAction)  
-            if minAction.score > action.score:
-                action.score = minAction.score
-                action.action = a
-                alpha = max(alpha,action.score)
-            if action.score >= beta:
-                return action
-    #print()
+        sucsessorborad = board.play_action(a)
+        player = -s.player
+        percepts = {'m': sucsessorborad.get_percepts(True), 'rows': 9, 'columns': 9, 'max_height': 5}
+        if (hash(str(percepts)),player) in visitedStates:
+            minAction = visitedStates[(hash(str(percepts)),player)]
+        else:
+            depth = s.depth + 1
+            time = s.time_left
+            sucsessorState = State(percepts,player,depth,time)
+            minAction = minValue(visitedStates,sucsessorState,alpha,beta)
+            visitedStates.setdefault((hash(str(percepts)),player),minAction)  
+        if minAction.score > action.score:
+            action.score = minAction.score
+            action.action = a
+            alpha = max(alpha,action.score)
+        if action.score >= beta:
+            return action
     return action
 
 def minValue(visitedStates,s,alpha,beta):
     board = dict_to_board(s.percepts)
     if board.is_finished():
         return Action(board.get_score(),None)
-    if s.depth >= 18:
+    if s.depth >= 10:
         return Action(h(s),None)
     action = Action(math.inf,None)
-    visitedActions = []
     for a in board.get_actions():
-        #print("min Action: ",a)
-        if a not in visitedActions:
-            sucsessorborad = board.play_action(a)
-            visitedActions.append(a)
-            player = -s.player
-            percepts = {'m': sucsessorborad.get_percepts(True), 'rows': 9, 'columns': 9, 'max_height': 5}
-            if (hash(str(percepts)),player) in visitedStates: 
-                maxAction = visitedStates[(hash(str(percepts)),player)]
-            else:
-                depth = s.depth + 1
-                time = s.time_left
-                sucsessorState = State(percepts,player,depth,time)
-                maxAction = minValue(visitedStates,sucsessorState,alpha,beta)
-                visitedStates.setdefault((hash(str(percepts)),player),maxAction)
-            if maxAction.score < action.score:
-                action.score = maxAction.score
-                action.action = a
-                beta = min(beta,action.score)
-            if action.score <= alpha:
-                return action
-    #print()
+        sucsessorborad = board.play_action(a)
+        player = -s.player
+        percepts = {'m': sucsessorborad.get_percepts(True), 'rows': 9, 'columns': 9, 'max_height': 5}
+        if (hash(str(percepts)),player) in visitedStates: 
+            maxAction = visitedStates[(hash(str(percepts)),player)]
+        else:
+            depth = s.depth + 1
+            time = s.time_left
+            sucsessorState = State(percepts,player,depth,time)
+            maxAction = minValue(visitedStates,sucsessorState,alpha,beta)
+            visitedStates.setdefault((hash(str(percepts)),player),maxAction)
+        if maxAction.score < action.score:
+            action.score = maxAction.score
+            action.action = a
+            beta = min(beta,action.score)
+        if action.score <= alpha:
+            return action
     return action
 
 def h(s):
