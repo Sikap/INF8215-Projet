@@ -20,12 +20,12 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 import math
 from avalam import *
 
+MAXDEPTH = 10
 class State:
-    def __init__(self, percepts, player, depth, time_left):
+    def __init__(self, percepts, player, depth):
         self.percepts = percepts
         self.player = player
         self.depth = depth
-        self.time_left = time_left
 
 class Action:
     def __init__(self, score, action):
@@ -38,12 +38,12 @@ def 𝗆𝗂𝗇𝗂𝗆𝖺𝗑𝖲𝖾𝖺𝗋𝖼𝗁(s0):
     return bestAction
 
 def 𝗆𝖺𝗑𝖵𝖺𝗅𝗎𝖾(visitedStates,s,alpha,beta):
-    board = dict_to_board(s.percepts)
+    board = dict_to_board(s.percepts)        
     if board.is_finished():
         return Action(board.get_score(),None)
-    if s.depth >= 10:
+    if s.depth >= MAXDEPTH:
         return Action(h(s),None)
-    action = Action(-math.inf,None)            
+    action = Action(-math.inf,None) 
     for a in board.get_actions():
         sucsessorborad = board.play_action(a)
         player = -s.player
@@ -51,9 +51,7 @@ def 𝗆𝖺𝗑𝖵𝖺𝗅𝗎𝖾(visitedStates,s,alpha,beta):
         if (hash(str(percepts)),player) in visitedStates:
             minAction = visitedStates[(hash(str(percepts)),player)]
         else:
-            depth = s.depth + 1
-            time = s.time_left
-            sucsessorState = State(percepts,player,depth,time)
+            sucsessorState = State(percepts,player,s.depth+1)
             minAction = minValue(visitedStates,sucsessorState,alpha,beta)
             visitedStates.setdefault((hash(str(percepts)),player),minAction)  
         if minAction.score > action.score:
@@ -65,10 +63,10 @@ def 𝗆𝖺𝗑𝖵𝖺𝗅𝗎𝖾(visitedStates,s,alpha,beta):
     return action
 
 def minValue(visitedStates,s,alpha,beta):
-    board = dict_to_board(s.percepts)
+    board = dict_to_board(s.percepts)        
     if board.is_finished():
         return Action(board.get_score(),None)
-    if s.depth >= 10:
+    if s.depth >= MAXDEPTH:
         return Action(h(s),None)
     action = Action(math.inf,None)
     for a in board.get_actions():
@@ -78,9 +76,7 @@ def minValue(visitedStates,s,alpha,beta):
         if (hash(str(percepts)),player) in visitedStates: 
             maxAction = visitedStates[(hash(str(percepts)),player)]
         else:
-            depth = s.depth + 1
-            time = s.time_left
-            sucsessorState = State(percepts,player,depth,time)
+            sucsessorState = State(percepts,player,s.depth+1)
             maxAction = minValue(visitedStates,sucsessorState,alpha,beta)
             visitedStates.setdefault((hash(str(percepts)),player),maxAction)
         if maxAction.score < action.score:
@@ -93,24 +89,27 @@ def minValue(visitedStates,s,alpha,beta):
 
 def h(s):
     board = dict_to_board(s.percepts)
+    score = s.player*board.get_score()    
+    return score
+    """
     score = 0
     for i in range(board.rows):
         for j in range(board.columns):
             if board.m[i][j] < 0:
-                if not board.is_tower_movable(i,j):
-                    score -= 3
-                elif is_Tower_Safe(board,i,j):
-                    score -= 2
-                elif not is_Tower_Safe(board,i,j):
+                #if not board.is_tower_movable(i,j):
+                    #score -= 3
+                if is_Tower_Safe(board,i,j):
                     score -= 1
-            
-            if board.m[i][j] > 0:
-                if not board.is_tower_movable(i,j):
-                    score += 3
-                elif is_Tower_Safe(board,i,j):
-                    score += 2
                 elif not is_Tower_Safe(board,i,j):
                     score += 1
+
+            if board.m[i][j] > 0:
+                #if not board.is_tower_movable(i,j):
+                    #score += 3
+                if is_Tower_Safe(board,i,j):
+                    score += 1
+                elif not is_Tower_Safe(board,i,j):
+                    score -= 1
     if score == 0:
         for i in range(board.rows):
             for j in range(board.columns):
@@ -118,7 +117,8 @@ def h(s):
                     score -= 1
                 elif board.m[i][j] == board.max_height:
                     score += 1
-    return score
+    """
+
 
 def is_Tower_Safe(board,i,j):
     h = abs(board.m[i][j])
@@ -138,10 +138,10 @@ def is_Opposite_Sign(a,b):
 def is_Quiescent(s):
     #board = dict_to_board(s.percepts)
     #for i in range(board.rows):
-    #        for j in range(board.columns):
+    #       for j in range(board.columns):
     #            if board.m[i][j] == 4 and not is_Tower_Safe(board,i,j):
-    #                return False
-    #            if board.m[i][j] == 3 and not is_Tower_Safe(board,i,j):
+    #               return False
+    #            if board.m[i][j] == -4 and not is_Tower_Safe(board,i,j):
     #                return False
     return True 
 
@@ -169,9 +169,8 @@ class MyAgent(Agent):
         print("step:", step)
         print("time left:", time_left if time_left else '+inf')
         # TODO: implement your agent and return an action for the current step.
-        initialSearchState = State(percepts,player,0,time_left)
+        initialSearchState = State(percepts,player,0)
         bestAction = 𝗆𝗂𝗇𝗂𝗆𝖺𝗑𝖲𝖾𝖺𝗋𝖼𝗁(initialSearchState)
-        print("bestAction: ", bestAction.action)
         return bestAction.action
 
    
