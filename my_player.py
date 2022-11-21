@@ -87,7 +87,9 @@ def minValue(visitedStates,s,alpha,beta):
 
 def h(s):
     board = dict_to_board(s.percepts)
-    score = s.player*board.get_score()    
+    score = s.player*board.get_score()
+    towers = complete_tower_quantity(board, s.player)
+    score = score/2 + towers/2
     return score
     """
     score = 0
@@ -127,6 +129,20 @@ def is_Tower_Safe(board,i,j):
                 if board.is_action_valid(action) and is_Opposite_Sign(board.m[i][j],board.m[i+di][j+dj]):
                    return False
     return True
+
+def complete_tower_quantity(board, player):
+    towers = 0
+    for i in range(board.rows):
+        for j in range(board.columns):
+            if player < 0:
+                if board.m[i][j] == -board.max_height:
+                    towers += 1
+
+            if player > 0:
+                if board.m[i][j] == board.max_height:
+                    towers += 1
+    return towers
+
 
 def is_Opposite_Sign(a,b):
     if a < 0 and b >= 0: return True
