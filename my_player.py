@@ -20,8 +20,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 import math
 from avalam import *
 
-
-MAXDEPTH = 4
+MIN = 0
+MAX = 1
+MAXDEPTH = 10
 
 def 𝗆𝗂𝗇𝗂𝗆𝖺𝗑𝖲𝖾𝖺𝗋𝖼𝗁(s0,player,depth):    
     visitedStates = {}
@@ -36,7 +37,11 @@ def 𝗆𝖺𝗑𝖵𝖺𝗅𝗎𝖾(visitedStates,s,player,depth,alpha,beta):
     bestScore,bestAction = -math.inf,None
     for action in s.get_actions():  
         nextState = s.play_action(action).clone()
-        minScore,_ = minValue(visitedStates,nextState,player,depth+1,alpha,beta)
+        if (hash(str(nextState)),MIN) in visitedStates:
+            minScore = visitedStates[(hash(str(nextState)),MIN)]
+        else:
+            minScore,_ = minValue(visitedStates,nextState,player,depth+1,alpha,beta)
+            visitedStates.setdefault((hash(str(nextState)),MIN),minScore)
         if  minScore > bestScore:
             bestScore,bestAction =  minScore,action
             alpha = max(alpha,bestScore)
@@ -53,7 +58,11 @@ def minValue(visitedStates,s,player,depth,alpha,beta):
     bestScore,bestAction = math.inf,None
     for action in s.get_actions():
         nextState = s.play_action(action).clone()
-        maxScore,_ = maxValue(visitedStates,nextState,player,depth+1,alpha,beta)
+        if (hash(str(nextState)),MAX) in visitedStates:
+            maxScore = visitedStates[(hash(str(nextState)),MAX)]
+        else:
+            maxScore,_ = maxValue(visitedStates,nextState,player,depth+1,alpha,beta)
+            visitedStates.setdefault((hash(str(nextState)),MAX),maxScore)
         if maxScore < bestScore:
             bestScore,bestAction = maxScore,action
             beta = min(beta,bestScore)
@@ -146,7 +155,6 @@ class MyAgent(Agent):
         # TODO: implement your agent and return an action for the current step.
         board = dict_to_board(percepts)        
         score,action = 𝗆𝗂𝗇𝗂𝗆𝖺𝗑𝖲𝖾𝖺𝗋𝖼𝗁(board,player,0)
-        print(score)
         return action
 
    
