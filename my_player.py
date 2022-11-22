@@ -20,75 +20,52 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 import math
 from avalam import *
 
-MAXDEPTH = 10
-class State:
-    def __init__(self, percepts, player, depth):
-        self.percepts = percepts
-        self.player = player
-        self.depth = depth
 
-class Action:
-    def __init__(self, score, action):
-        self.score = score
-        self.action = action
+MAXDEPTH = 4
 
-def 𝗆𝗂𝗇𝗂𝗆𝖺𝗑𝖲𝖾𝖺𝗋𝖼𝗁(s0):    
+def 𝗆𝗂𝗇𝗂𝗆𝖺𝗑𝖲𝖾𝖺𝗋𝖼𝗁(s0,player,depth):    
     visitedStates = {}
-    bestAction = 𝗆𝖺𝗑𝖵𝖺𝗅𝗎𝖾(visitedStates,s0,-math.inf,math.inf)
+    bestAction = 𝗆𝖺𝗑𝖵𝖺𝗅𝗎𝖾(visitedStates,s0,player,depth,-math.inf,math.inf)
     return bestAction
 
-def 𝗆𝖺𝗑𝖵𝖺𝗅𝗎𝖾(visitedStates,s,alpha,beta):
-    board = dict_to_board(s.percepts)        
-    if board.is_finished():
-        return Action(board.get_score(),None)
-    if s.depth >= MAXDEPTH:
-        return Action(h(s),None)
-    bestAction = Action(-math.inf,None) 
-    for action in board.get_actions():
-        sucsessorborad = board.play_action(action)
-        player = -s.player
-        percepts = {'m': sucsessorborad.get_percepts(True), 'rows': 9, 'columns': 9, 'max_height': 5}
-        if (hash(str(percepts)),player) in visitedStates:
-            minAction = visitedStates[(hash(str(percepts)),player)]
-        else:
-            sucsessorState = State(percepts,player,s.depth+1)
-            minAction = minValue(visitedStates,sucsessorState,alpha,beta)
-            visitedStates.setdefault((hash(str(percepts)),player),minAction)  
-        if minAction.score > bestAction.score:
-            bestAction = Action(minAction.score,action)
-            alpha = max(alpha,bestAction.score)
-        if bestAction.score >= beta:
-            return bestAction
-    return bestAction
+def 𝗆𝖺𝗑𝖵𝖺𝗅𝗎𝖾(visitedStates,s,player,depth,alpha,beta):
+    if s.is_finished():
+        return player*s.get_score(),None
+    if depth >= MAXDEPTH:
+        return h(s,player),None
+    bestScore,bestAction = -math.inf,None
+    for action in s.get_actions():  
+        nextState = s.play_action(action).clone()
+        minScore,_ = minValue(visitedStates,nextState,player,depth+1,alpha,beta)
+        if  minScore > bestScore:
+            bestScore,bestAction =  minScore,action
+            alpha = max(alpha,bestScore)
+        if bestScore >= beta:
+            return bestScore,bestAction   
+    return bestScore,bestAction
 
-def minValue(visitedStates,s,alpha,beta):
-    board = dict_to_board(s.percepts)        
-    if board.is_finished():
-        return Action(board.get_score(),None)
-    if s.depth >= MAXDEPTH:
-        return Action(h(s),None)
-    bestAction = Action(math.inf,None)
-    for action in board.get_actions():
-        sucsessorborad = board.play_action(action)
-        player = -s.player
-        percepts = {'m': sucsessorborad.get_percepts(True), 'rows': 9, 'columns': 9, 'max_height': 5}
-        if (hash(str(percepts)),player) in visitedStates: 
-            maxAction = visitedStates[(hash(str(percepts)),player)]
-        else:
-            sucsessorState = State(percepts,player,s.depth+1)
-            maxAction = minValue(visitedStates,sucsessorState,alpha,beta)
-            visitedStates.setdefault((hash(str(percepts)),player),maxAction)
-        if maxAction.score < bestAction.score:
-            bestAction = Action(maxAction.score,action)
-            beta = min(beta,bestAction.score)
-        if bestAction.score <= alpha:
-            return bestAction
-    return bestAction
 
-def h(s):
-    board = dict_to_board(s.percepts)
-    score = s.player*board.get_score()    
+def minValue(visitedStates,s,player,depth,alpha,beta):
+    if s.is_finished():            
+        return player*s.get_score(),None
+    if depth >= MAXDEPTH:
+        return h(s,player),None
+    bestScore,bestAction = math.inf,None
+    for action in s.get_actions():
+        nextState = s.play_action(action).clone()
+        maxScore,_ = maxValue(visitedStates,nextState,player,depth+1,alpha,beta)
+        if maxScore < bestScore:
+            bestScore,bestAction = maxScore,action
+            beta = min(beta,bestScore)
+        if bestScore <= alpha: 
+            return bestScore,bestAction
+    return bestScore,bestAction
+
+def h(s,player):
+    score = player*s.get_score()    
     return score
+   
+
     """
     score = 0
     for i in range(board.rows):
@@ -167,9 +144,10 @@ class MyAgent(Agent):
         print("step:", step)
         print("time left:", time_left if time_left else '+inf')
         # TODO: implement your agent and return an action for the current step.
-        initialSearchState = State(percepts,player,0)
-        bestAction = 𝗆𝗂𝗇𝗂𝗆𝖺𝗑𝖲𝖾𝖺𝗋𝖼𝗁(initialSearchState)
-        return bestAction.action
+        board = dict_to_board(percepts)        
+        score,action = 𝗆𝗂𝗇𝗂𝗆𝖺𝗑𝖲𝖾𝖺𝗋𝖼𝗁(board,player,0)
+        print(score)
+        return action
 
    
 
