@@ -22,17 +22,16 @@ from avalam import *
 
 MIN = 0
 MAX = 1
-MAXDEPTH = 10
 
-def 𝗆𝗂𝗇𝗂𝗆𝖺𝗑𝖲𝖾𝖺𝗋𝖼𝗁(s0,player,depth):    
+def 𝗆𝗂𝗇𝗂𝗆𝖺𝗑𝖲𝖾𝖺𝗋𝖼𝗁(s0,player,depth,maxDepth):    
     visitedStates = {}
-    bestAction = 𝗆𝖺𝗑𝖵𝖺𝗅𝗎𝖾(visitedStates,s0,player,depth,-math.inf,math.inf)
+    bestAction = 𝗆𝖺𝗑𝖵𝖺𝗅𝗎𝖾(visitedStates,s0,player,depth,-math.inf,math.inf,maxDepth)
     return bestAction
 
-def 𝗆𝖺𝗑𝖵𝖺𝗅𝗎𝖾(visitedStates,s,player,depth,alpha,beta):
+def 𝗆𝖺𝗑𝖵𝖺𝗅𝗎𝖾(visitedStates,s,player,depth,alpha,beta,maxDepth):
     if s.is_finished():
         return player*s.get_score(),None
-    if depth >= MAXDEPTH:
+    if depth >= maxDepth:
         return h(s,player),None
     bestScore,bestAction = -math.inf,None
     for action in s.get_actions():  
@@ -40,7 +39,7 @@ def 𝗆𝖺𝗑𝖵𝖺𝗅𝗎𝖾(visitedStates,s,player,depth,alpha,beta):
         if (hash(str(nextState)),MIN) in visitedStates:
             minScore = visitedStates[(hash(str(nextState)),MIN)]
         else:
-            minScore,_ = minValue(visitedStates,nextState,player,depth+1,alpha,beta)
+            minScore,_ = minValue(visitedStates,nextState,player,depth+1,alpha,beta,maxDepth)
             visitedStates.setdefault((hash(str(nextState)),MIN),minScore)
         if  minScore > bestScore:
             bestScore,bestAction =  minScore,action
@@ -50,10 +49,10 @@ def 𝗆𝖺𝗑𝖵𝖺𝗅𝗎𝖾(visitedStates,s,player,depth,alpha,beta):
     return bestScore,bestAction
 
 
-def minValue(visitedStates,s,player,depth,alpha,beta):
+def minValue(visitedStates,s,player,depth,alpha,beta,maxDepth):
     if s.is_finished():            
         return player*s.get_score(),None
-    if depth >= MAXDEPTH:
+    if depth >= maxDepth:
         return h(s,player),None
     bestScore,bestAction = math.inf,None
     for action in s.get_actions():
@@ -61,7 +60,7 @@ def minValue(visitedStates,s,player,depth,alpha,beta):
         if (hash(str(nextState)),MAX) in visitedStates:
             maxScore = visitedStates[(hash(str(nextState)),MAX)]
         else:
-            maxScore,_ = maxValue(visitedStates,nextState,player,depth+1,alpha,beta)
+            maxScore,_ = maxValue(visitedStates,nextState,player,depth+1,alpha,beta,maxDepth)
             visitedStates.setdefault((hash(str(nextState)),MAX),maxScore)
         if maxScore < bestScore:
             bestScore,bestAction = maxScore,action
@@ -129,6 +128,9 @@ def is_Quiescent(s):
     #                return False
     return True 
 
+def set_maxDepth(step):
+        return 10
+
 class MyAgent(Agent):
 
     """My Avalam agent."""
@@ -154,7 +156,7 @@ class MyAgent(Agent):
         print("time left:", time_left if time_left else '+inf')
         # TODO: implement your agent and return an action for the current step.
         board = dict_to_board(percepts)        
-        score,action = 𝗆𝗂𝗇𝗂𝗆𝖺𝗑𝖲𝖾𝖺𝗋𝖼𝗁(board,player,0)
+        score,action = 𝗆𝗂𝗇𝗂𝗆𝖺𝗑𝖲𝖾𝖺𝗋𝖼𝗁(board,player,0,set_maxDepth(step))
         return action
 
    
